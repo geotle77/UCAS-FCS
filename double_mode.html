@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #ffffff;
+    border: 1px double;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    border-collapse: collapse;
+    padding: 0;
+    margin: auto;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+</style>
+</head>
+<body onload="start_double_Game()">
+    <h1 style="text-align:center;color:cyan">林深见鹿</h1>
+    <script>
+    var player2;
+    var player1;
+    var myObstacles = [];
+    var myScore;
+    var myBackground;
+    var mySound;
+    var myBGM;
+function start_double_Game() {
+    player1 = new double_component(30, 30, "3.jpg", 30, 560,"image");
+    player2 = new double_component(30, 30, "3.png",590, 560,"image");
+    myScore = new double_component("30px", "Consolas", "black", 280, 40, "text");
+    my_double_GameArea.start();
+    myBackground = new double_component(720, 600, "background.jpg", 0, 0, "image");
+    myBGM= new sound("绘师岸田 - 空港.mp3");
+    mySound = new sound("crash.mp3");
+    myBGM.play();
+}
+var my_double_GameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 720;
+        this.canvas.height = 600;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(update_double_GameArea, 16);
+        window.addEventListener('keydown', function (e) {
+            my_double_GameArea.keys = (my_double_GameArea.keys || []);
+            my_double_GameArea.keys[e.keyCode] = true;
+    })
+    window.addEventListener('keyup', function (e) {
+        my_double_GameArea.keys[e.keyCode] = false;
+    })
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    }
+}
+function double_component(width, height, color, x, y, type) {
+    this.type = type;
+    if (type == "image") {
+    this.image = new Image();
+    this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+        ctx = my_double_GameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        if (type == "image") {
+      ctx.drawImage(this.image,
+        this.x,
+        this.y,
+        this.width, this.height);
+    } else {
+      ctx.fillStyle = color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+    }
+    this.newPos2 = function() {
+        if((this.y>0)&&(this.y<570)&&(this.x>0)&&(this.x<690)){
+            
+        this.y+= this.speedY;
+        this.x+=this.speedX;
+        }
+        else{
+            if(this.y==0){
+                this.speedY=1;
+                this.y+= this.speedY;
+                this.x+=this.speedX; 
+            }
+            else if(this.y==570){
+                this.speedY=-1;
+                this.y+=this.speedY;
+                this.x+=this.speedX;
+            }
+            else if (this.x==0){
+                this.speedX=1;
+                this.y+= this.speedY;
+                this.x+=this.speedX;
+            }
+            else{
+                this.speedX=-1;
+                this.y+= this.speedY;
+                this.x+=this.speedX;
+            }
+           
+        }      
+        
+    }
+    this.newPos=function(){
+        this.x += this.speedX;
+        this.y += this.speedY;
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+function update_double_GameArea() {
+    var y,x, width1, flow1,flow2,width2,gap1, gap2,minWidth, maxWidth, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (player1.crashWith(myObstacles[i])||player2.crashWith(myObstacles[i])) {
+            my_double_GameArea.stop();
+            mySound.play();
+            myBGM.stop();
+            return;
+        } 
+    }
+    my_double_GameArea.clear(); 
+    my_double_GameArea.frameNo += 1;
+    myBackground.newPos();    
+    myBackground.update();
+    if (my_double_GameArea.frameNo == 1 || double_everyinterval(250)) {
+      x = my_double_GameArea.canvas.width;
+      y= 0;
+        minWidth = 90;
+        maxWidth = 170;
+        width1 = Math.floor(Math.random()*(maxWidth-minWidth+1)+minWidth);
+        width2=Math.floor(Math.random()*(maxWidth-minWidth+1)+minWidth);
+        minGap = 70;
+        maxGap =115;
+        maxFlow=60
+        minFlow=50
+        flow1=Math.floor(Math.random()*(maxFlow-minFlow+1)+minFlow);
+        flow2=Math.floor(Math.random()*(maxFlow-minFlow+1)+minFlow);
+        gap1 = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        gap2 = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new double_component(width1, 10, "green", 0, y));
+        myObstacles.push(new double_component(width2, 10,  "skyblue", width1 + gap1,y-flow1 ));
+        myObstacles.push(new double_component(width1+width2, 10, "green",width1+width2+gap1+gap2, y+flow2))
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].speedY= 1;
+        myObstacles[i].newPos();
+        myObstacles[i].update();
+    }  
+    player2.speedX = 0;
+    player2.speedY = 0;
+    player1.speedX = 0;
+    player1.speedY = 0;
+    player2.image.src = "1.jpg";
+    player1.image.src="3.jpg";
+    if (my_double_GameArea.keys && my_double_GameArea.keys[37]) {player2.speedX = -1; player2.image.src = "2.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[39]) {player2.speedX = 1; player2.image.src = "2.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[38]) {player2.speedY = -1; player2.image.src = "2.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[40]) {player2.speedY = 1; player2.image.src = "2.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[65]) {player1.speedX = -1; player1.image.src="4.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[68]) {player1.speedX = 1; player1.image.src="4.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[87]) {player1.speedY = -1; player1.image.src="4.jpg";}
+    if (my_double_GameArea.keys && my_double_GameArea.keys[83]) {player1.speedY = 1;player1.image.src="4.jpg"; }
+    myScore.text="SCORE: " + my_double_GameArea.frameNo;
+    player2.update();
+    player2.newPos2();  
+    player1.newPos2();    
+    player1.update();
+    myScore.update();
+    
+}
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }    
+}
+function double_everyinterval(n) {
+    if ((my_double_GameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+
+</script>
+<div align="center">
+<p>请使用方向键和WASD键分别控制蝴蝶</p>
+<input type=button value=重新开始 onclick="history.go(0)"> 
+<a href="Deer_in_the_forest.html" target="_self">
+    <input type=button value="返回" >
+      </a>
+</div>
+</body>
+</html>
