@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #ffffff;
+    border: 1px double;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    border-collapse: collapse;
+    padding: 0;
+    margin: auto;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+</style>
+</head>
+<body onload="start_single_Game()">
+    <h1 style="text-align:center;color:cyan">林深见鹿</h1>
+<script>
+    var player2;
+    var player1;
+    var myObstacles = [];
+    var myScore;
+    var myBackground;
+    var mySound;
+    var myBGM;
+    var victory;
+    function start_single_Game() {
+        player2 = new single_component(30, 30, "../img/1.jpg",590, 560,"image");
+        myScore = new single_component("30px", "Consolas", "black", 280, 40, "text");
+        my_single_GameArea.start();
+        myBackground = new single_component(720, 600, "../img/background.jpg", 0, 0, "image");
+        myBGM= new sound("../bgm/绘师岸田 - 空港.mp3");
+        victory=new sound("../bgm/盼钰 - 阿尔茨海默症.mp3");
+        mySound = new sound("../bgm/crash.mp3");
+        myBGM.play();
+ }       
+    
+var my_single_GameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 720;
+        this.canvas.height = 600;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(update_single_GameArea, 8);
+        window.addEventListener('keydown', function (e) {
+            my_single_GameArea.keys = (my_single_GameArea.keys || []);
+            my_single_GameArea.keys[e.keyCode] = true;
+    })
+    window.addEventListener('keyup', function (e) {
+        my_single_GameArea.keys[e.keyCode] = false;
+    })
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    }
+    }
+    function single_component(width, height, color, x, y, type) {
+    this.type = type;
+    if (type == "image") {
+    this.image = new Image();
+    this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+        ctx = my_single_GameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        if (type == "image") {
+      ctx.drawImage(this.image,
+        this.x,
+        this.y,
+        this.width, this.height);
+    } else {
+      ctx.fillStyle = color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+    }
+    this.newPos2 = function() {
+        if((this.y>0)&&(this.y<570)&&(this.x>0)&&(this.x<690)){
+            
+        this.y+= this.speedY;
+        this.x+=this.speedX;
+        }
+        else{
+            if(this.y==0){
+                this.speedY=1;
+                this.y+= this.speedY;
+                this.x+=this.speedX; 
+            }
+            else if(this.y==570){
+                this.speedY=-1;
+                this.y+=this.speedY;
+                this.x+=this.speedX;
+            }
+            else if (this.x==0){
+                this.speedX=1;
+                this.y+= this.speedY;
+                this.x+=this.speedX;
+            }
+            else{
+                this.speedX=-1;
+                this.y+= this.speedY;
+                this.x+=this.speedX;
+            }
+           
+        }      
+        
+    }
+    this.newPos=function(){
+        this.x += this.speedX;
+        this.y += this.speedY;
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+function display_alert1()
+  {
+  alert("即便死亡无数次，我也依然会继续寻找心之所往！")
+  }
+  function display_alert2()
+  {
+  alert("我看到它了，就在眼前，只差那么一点，只要再来一次，我一定能够完成的！")
+  }
+  function display_alert3()
+  {
+  alert("恭喜你，成功完成关卡！你可以继续探索游戏，取得特定的分数时将触发彩蛋")
+  }
+  function display_alert4()
+  {
+  alert("还有数不尽的秘密等待你去探索！")
+  }
+  function display_alert5()
+  {
+  alert("你发现了半截纸条，上面写着34316。")
+  }
+  function display_alert6()
+  {
+  alert("你发现了另外半截纸条，上面写着23750，你意识到这应该是一个联系方式")
+  }
+  function display_alert7()
+  {
+  alert("你耳边传来突然想起了一阵不规则的滴答声，旋律为 滴滴滴嗒滴滴滴滴滴嗒嘀嗒滴滴滴滴嗒嗒滴滴滴嗒滴滴嗒")
+  }
+  function display_alert8()
+  {
+  alert("你见到了，神鹿轻轻告诉你，如果告知它正确的数字，它将实现你一个合理的愿望。")
+  }
+  function display_alert9()
+  {
+  alert("生命伟大，万物敬畏。自然早有预告，一切开始的时间才是真正的答案！")
+  }
+function update_single_GameArea() {
+    var y,x, width1, flow1,flow2,width2,gap1, gap2,minWidth, maxWidth, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (my_single_GameArea.frameNo==10000){
+            display_alert3();
+            my_single_GameArea.frameNo+=1;
+            victory.play();
+            myBGM.stop();
+            return;
+        }
+        if (my_single_GameArea.frameNo==17777){
+            display_alert6();
+            my_single_GameArea.frameNo+=1;
+            return;
+        }
+        if (my_single_GameArea.frameNo==7777){
+            display_alert5();
+            my_single_GameArea.frameNo+=1;
+            return;
+        }
+        if (my_single_GameArea.frameNo==27777){
+            display_alert8();
+            my_single_GameArea.frameNo+=1;
+            return;
+        }
+        if (player2.crashWith(myObstacles[i])) {
+            mySound.play();
+            myBGM.stop();
+            my_single_GameArea.stop();
+        if (my_single_GameArea.frameNo<7777){
+        display_alert1();
+        my_single_GameArea.stop();
+        return;
+         }
+        if (7777<my_single_GameArea.frameNo<10000){
+        display_alert2();
+        my_single_GameArea.stop();
+        return;
+         }
+         if (my_single_GameArea.frameNo>10000){
+        display_alert4();
+        victory.stop();
+        my_single_GameArea.stop();
+        return;
+         }
+         if (my_single_GameArea.frameNo==7777){
+        display_alert7();
+        my_single_GameArea.stop();
+        return;
+        }
+        if (my_single_GameArea.frameNo==17777){
+        display_alert9();
+        my_single_GameArea.stop();
+        return;
+         }
+         return;} 
+    }
+    my_single_GameArea.clear(); 
+    my_single_GameArea.frameNo += 1;
+    myBackground.newPos();    
+    myBackground.update();
+    if (my_single_GameArea.frameNo == 1 || single_everyinterval(200)) {
+      x = my_single_GameArea.canvas.width;
+      y= 0;
+        minWidth = 90;
+        maxWidth = 170;
+        width1 = Math.floor(Math.random()*(maxWidth-minWidth+1)+minWidth);
+        width2=Math.floor(Math.random()*(maxWidth-minWidth+1)+minWidth);
+        minGap = 70;
+        maxGap =115;
+        maxFlow=100
+        minFlow=60
+        flow1=Math.floor(Math.random()*(maxFlow-minFlow+1)+minFlow);
+        flow2=Math.floor(Math.random()*(maxFlow-minFlow+1)+minFlow);
+        gap1 = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        gap2 = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new single_component(width1, 10, "green", 0, y));
+        myObstacles.push(new single_component(width2, 10,  "blue", width1 + gap1,y-flow1 ));
+        myObstacles.push(new single_component(width1+width2, 10, "green",width1+width2+gap1+gap2, y+flow2))
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].speedY= 1;
+        myObstacles[i].newPos();
+        myObstacles[i].update();
+    }  
+    player2.image.src = "../img/1.jpg";
+    player2.speedX = 0;
+    player2.speedY = 0;
+    if (my_single_GameArea.keys && my_single_GameArea.keys[37]){player2.speedX = -1;player2.image.src = "../img/2.jpg"; }
+    if (my_single_GameArea.keys && my_single_GameArea.keys[39] ){player2.speedX = 1; player2.image.src = "../img/2.jpg";}
+    if (my_single_GameArea.keys && my_single_GameArea.keys[38]) {player2.speedY = -1; player2.image.src = "../img/2.jpg";}
+    if (my_single_GameArea.keys && my_single_GameArea.keys[40]) {player2.speedY = 1; player2.image.src = "../img/2.jpg";}
+    myScore.text="SCORE: " + my_single_GameArea.frameNo;
+    myScore.update();
+    player2.newPos2();    
+    player2.update();
+}
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }    
+}
+
+
+function single_everyinterval(n) {
+    if ((my_single_GameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+</script>
+<div align="center">
+    <p>请使用方向键控制蝴蝶</p>
+    <input type=button value=重新开始 onclick="history.go(0)"> 
+    <a href="Deer_in_the_forest.html" target="_self">
+      <input type=button value="返回" >
+        </a>
+    </div>
+</body>
+</html>
